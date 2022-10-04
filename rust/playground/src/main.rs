@@ -1,49 +1,37 @@
+use std::collections::{HashMap, VecDeque, HashSet};
+
 struct Solution;
 
 impl Solution {
-    fn z_function(s: &[u8]) -> Vec<usize> {
-        let n = s.len();
-        let mut z = vec![0; n];
-        let (mut l, mut r) = (0, 0);
-        for i in 1..n {
-            if i <= r {
-                z[i] = std::cmp::min(r - i + 1, z[i - l]);
-            }
-            while i + z[i] < n && s[z[i]] == s[i + z[i]] {
-                z[i] += 1;
-            }
-            let cur_r = i + z[i] - 1;
-            if cur_r > r {
-                l = i;
-                r = cur_r
+    pub fn find_all_recipes(recipes: Vec<String>, ingredients: Vec<Vec<String>>, supplies: Vec<String>) -> Vec<String> {
+        let mut g = HashMap::<&String, Vec<&String>>::new();
+        let mut rem = HashMap::<&String, HashSet<&String>>::new();
+        for (i, ings) in ingredients.iter().enumerate() {
+            let rec = &recipes[i];
+            rem.insert(rec, ings.iter().collect());
+            for ing in ings {
+                g.entry(ing)
+                    .or_insert_with(|| Vec::new())
+                    .push(rec);
             }
         }
-        z
-    }
-
-    pub fn delete_string(s: String) -> i32 {
-        let a = s.as_bytes();
-        let n = a.len();
-        let mut dp = vec![0; n + 1];
-        for i in (0..n).rev() {
-            let mut cur = 1;
-            let z = Self::z_function(&a[i..]);
-            for j in i + 1..n {
-                let l = j - i;
-                if j + l <= n && z[j - i] >= l {
-                    cur = std::cmp::max(cur, dp[j] + 1);
+        let mut q: VecDeque<&String> = supplies.iter().collect();
+        let mut ans = Vec::<String>::new();
+        while let Some(ing) = q.pop_front() {
+            if let Some(nxt) = g.get(ing) {
+                for rec in nxt {
+                    let s = rem.get_mut(rec).unwrap();
+                    if s.remove(ing) && s.is_empty() {
+                        q.push_back(rec);
+                        ans.push((*rec).clone())
+                    }
                 }
             }
-            dp[i] = cur;
-            //dbg!(i, dp[i]);
         }
-        return dp[0];
+        ans
     }
 }
 
 fn main() {
-    //println!("{}", Solution::delete_string(String::from("aaabaab")));
-    println!("{}", Solution::delete_string(String::from("abcabcdabc")));
-    println!("{}", Solution::delete_string(String::from("aaabaab")));
-    println!("{}", Solution::delete_string(String::from("aaaaa")));
 }
+
