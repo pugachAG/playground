@@ -1,37 +1,48 @@
-use std::collections::{HashMap, VecDeque, HashSet};
-
 struct Solution;
 
 impl Solution {
-    pub fn find_all_recipes(recipes: Vec<String>, ingredients: Vec<Vec<String>>, supplies: Vec<String>) -> Vec<String> {
-        let mut g = HashMap::<&String, Vec<&String>>::new();
-        let mut rem = HashMap::<&String, HashSet<&String>>::new();
-        for (i, ings) in ingredients.iter().enumerate() {
-            let rec = &recipes[i];
-            rem.insert(rec, ings.iter().collect());
-            for ing in ings {
-                g.entry(ing)
-                    .or_insert_with(|| Vec::new())
-                    .push(rec);
+    fn upper_bound(a: &Vec<i32>, v: i32) -> usize {
+        let n = a.len();
+        if a.last().map_or(true, |x| *x <= v) {
+            return n;
+        }
+        let (mut l, mut r) = (0, n-1);
+        while l < r {
+            let mid = (l+r)/2;
+            if a[mid] <= v {
+                l = mid+1;
+            } else {
+                r = mid;
             }
         }
-        let mut q: VecDeque<&String> = supplies.iter().collect();
-        let mut ans = Vec::<String>::new();
-        while let Some(ing) = q.pop_front() {
-            if let Some(nxt) = g.get(ing) {
-                for rec in nxt {
-                    let s = rem.get_mut(rec).unwrap();
-                    if s.remove(ing) && s.is_empty() {
-                        q.push_back(rec);
-                        ans.push((*rec).clone())
-                    }
-                }
+        l
+    }
+
+    fn lis(arr: &Vec<i32>) -> usize {
+        let mut a = Vec::<i32>::new();
+        for v in arr.iter().copied() {
+            let i = Self::upper_bound(&a, v);
+            if i == a.len() {
+                a.push(v);
+            } else {
+                a[i] = v;
             }
+            dbg!(&a);
         }
-        ans
+        a.len()
+    }
+
+    pub fn k_increasing(arr: Vec<i32>, k: usize) -> i32 {
+        let n = arr.len();
+        let mut ans = 0;
+        for i in 0..k {
+            let cur: Vec<_> = (i..n).step_by(k).map(|i| arr[i]).collect();
+            ans += Self::lis(&cur);
+        }
+        ans as i32
     }
 }
 
 fn main() {
+    println!("{}", Solution::k_increasing(vec![1, 4, 3], 1));
 }
-
