@@ -1,48 +1,32 @@
 struct Solution;
 
-impl Solution {
-    fn upper_bound(a: &Vec<i32>, v: i32) -> usize {
-        let n = a.len();
-        if a.last().map_or(true, |x| *x <= v) {
-            return n;
+struct Dsu {
+    p: Vec<usize>
+}
+
+impl Dsu {
+    fn new(n: usize) -> Dsu {
+        Dsu {
+            p: (0..n).collect()
         }
-        let (mut l, mut r) = (0, n-1);
-        while l < r {
-            let mid = (l+r)/2;
-            if a[mid] <= v {
-                l = mid+1;
-            } else {
-                r = mid;
-            }
-        }
-        l
     }
 
-    fn lis(arr: &Vec<i32>) -> usize {
-        let mut a = Vec::<i32>::new();
-        for v in arr.iter().copied() {
-            let i = Self::upper_bound(&a, v);
-            if i == a.len() {
-                a.push(v);
-            } else {
-                a[i] = v;
-            }
-            dbg!(&a);
+    fn parent(&mut self, i: usize) -> usize {
+        if self.p[i] != i {
+            self.p[i] = self.parent(self.p[i]);
         }
-        a.len()
+        self.p[i]
     }
 
-    pub fn k_increasing(arr: Vec<i32>, k: usize) -> i32 {
-        let n = arr.len();
-        let mut ans = 0;
-        for i in 0..k {
-            let cur: Vec<_> = (i..n).step_by(k).map(|i| arr[i]).collect();
-            ans += Self::lis(&cur);
+    fn join(&mut self, i: usize, j: usize) {
+        let pi = self.parent(i);
+        let pj = self.parent(j);
+        if pi != pj {
+            self.p[pj] = pi;
         }
-        ans as i32
     }
 }
 
+
 fn main() {
-    println!("{}", Solution::k_increasing(vec![1, 4, 3], 1));
 }
