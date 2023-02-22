@@ -1,5 +1,3 @@
-#![feature(test)]
-
 use std::time::Duration;
 use std::time::Instant;
 
@@ -12,8 +10,6 @@ use rand::prelude::*;
 use rand::thread_rng;
 use rand::seq::SliceRandom;
 use sha2::Digest;
-
-extern crate test;
 
 const PATH: &str = "/Users/pugachag/Data/rocksdb/playground";
 const COL: &str = "col1";
